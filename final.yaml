@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: api-app-deployement
+ labels:
+  type: node-api-app
+spec:
+ template:
+  metadata:
+   name: api-application
+   labels:
+    type: node-api-app
+  spec:
+   containers:
+    - name: app-container
+      image: krishnansai/new-sag:1.0
+      resources:
+        limits:
+          memory: "1Gi"
+          cpu: "1"
+      ports:
+        - containerPort: 4000
+      env:
+        - name: DB_HOST
+          valueFrom:
+           secretKeyRef:
+             name: dbsecret
+             key: DB_HOST
+        - name: DB_USER
+          valueFrom:
+           secretKeyRef:
+             name: dbsecret
+             key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+           secretKeyRef:
+             name: dbsecret
+             key: DB_PASSWORD
+        - name: DB_DATABASE
+          valueFrom:
+           secretKeyRef:
+             name: dbsecret
+             key: DB_DATABASE
+        - name: DB_PORT
+          valueFrom:
+           secretKeyRef:
+             name: dbsecret
+             key: DB_PORT
+        - name: PORT
+          valueFrom:
+           secretKeyRef:
+             name: dbsecret
+             key: PORT
+ replicas: 1
+ selector:
+  matchLabels:
+   type: node-api-app
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-app-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 4000
+      targetPort: 4000
+  selector:
+    type: node-api-app
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: node-autoscaling
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    type: node-api-app
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpuutilization
+      target:
+        type: Utilization
+        averageUtilization: 40
