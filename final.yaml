@@ -18,6 +18,9 @@ spec:
         limits:
           memory: "1Gi"
           cpu: "1"
+        requests:
+          memory: "500mi"
+          cpu: "1"
       ports:
         - containerPort: 4000
       env:
