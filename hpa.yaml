@@ -1,0 +1,13 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-autoscaling
+  autoscaling.alpha.kubernetes.io/behavior: '{"ScaleUp":{"StabilizationWindowSeconds":10,"Policies":[{"Type":"Pods","Value":1,"PeriodSeconds":15},{"Type":"Percent","Value":10,"PeriodSeconds":15}]},"ScaleDown":{"StabilizationWindowSeconds":10,"Policies":[{"Type":"Pods","Value":1,"PeriodSeconds":15}]}}'
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-app-deployement
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 4
